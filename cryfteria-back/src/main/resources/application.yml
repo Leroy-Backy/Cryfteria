@@ -1,0 +1,23 @@
+application:
+  title: Cryfteria backend
+  version: 0.0.1
+  creator: Bebra inc.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cryfteria-db
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+jwt:
+  config:
+    secret: 397A24432646294A404E635266556A586E3272357538782F4125442A472D4B61
+    expiration-hours: 100
