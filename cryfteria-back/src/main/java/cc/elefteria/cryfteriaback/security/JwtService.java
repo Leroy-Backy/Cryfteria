@@ -17,9 +17,9 @@ import java.util.function.Function;
 @Service
 public class JwtService {
   
-  @Value("${jwt.config.secret}")
+  @Value("${cryfteria.jwt.config.secret}")
   private String secretKey;
-  @Value("${jwt.config.expiration-hours}")
+  @Value("${cryfteria.jwt.config.expiration-hours}")
   private Integer expirationHours;
 
   public String extractUsername(String token) {

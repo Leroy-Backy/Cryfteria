@@ -1,19 +1,26 @@
 package cc.elefteria.cryfteriaback.user;
 
+import cc.elefteria.cryfteriaback.images.Image;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Entity(name = "_user")
 public class User implements UserDetails {
   @Id
@@ -22,14 +29,66 @@ public class User implements UserDetails {
   
   private String firstName;
   private String lastName;
-  private String username;
   @Column(unique = true)
   private String nickname;
+  private String bio;
   @Column(unique = true)
   private String publicAddress;
   private String nonce;
   @Enumerated(EnumType.STRING)
   private Role role;
+  @CreationTimestamp
+  private Date createdDate;
+  
+  @OneToOne(cascade = CascadeType.ALL)
+  private Image photo;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  private Image photoMin;
+
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+  @JoinTable(name = "following",
+      joinColumns = @JoinColumn(name = "follower_user_id"),
+      inverseJoinColumns = @JoinColumn(name = "followed_user_id"))
+  private Set<User> follows = new HashSet<>();
+
+  @ManyToMany(mappedBy = "follows", cascade = {CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+  private Set<User> followers = new HashSet<>();
+
+  private int amountOfFollowers;
+  private int amountOfFollows;
+
+  public void addFollow(User user){
+    if(follows == null){
+      follows = new HashSet<>();
+    }
+    follows.add(user);
+    amountOfFollows++;
+    user.addFollower(this);
+  }
+
+  private void addFollower(User user){
+    if(followers == null){
+      followers = new HashSet<>();
+    }
+    followers.add(user);
+    amountOfFollowers++;
+  }
+
+  public void removeFollow(User user){
+    if(follows.contains(user)){
+      follows.remove(user);
+      amountOfFollows--;
+      user.removeFollower(this);
+    }
+  }
+
+  private void removeFollower(User user){
+    if(followers.contains(user)){
+      followers.remove(user);
+      amountOfFollowers--;
+    }
+  }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
